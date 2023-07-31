@@ -1,0 +1,22 @@
+# Fig pre block. Keep at the top of this file.
+[[ -f "$HOME/.fig/shell/zprofile.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zprofile.pre.zsh"
+
+export BAT_THEME="gruvbox-dark"
+export PAGER='less -RF'
+export EDITOR="nvim"
+export NNN_BMS="f:~/Documents/;h:~;d:~/Downloads/;c:~/.config/;t:~/.Trash/;u:~/Documents/Place_cells_unified/;n:~/Documents/notes/;i:~/Documents/info_and_coding_in_the_brain/;l:~/Documents/papers_library/;p:~/Documents/projects/;b:/opt/homebrew/;"
+export NNN_COLORS='6125'
+export NNN_FIFO="/tmp/nnn.fifo"
+export NNN_PLUG="j:autojump;c:fzcd;o:fzopen;d:dragdrop;p:preview-tui;f:fzplug;"
+export NNN_FCOLORS='0000E6310000000000000000'
+export NNN_ARCHIVE="\\.(7z|bz2|gz|tar|tgz|zip)$"
+export NNN_TRASH=1
+export NNN_USE_EDITOR=1
+export NNN_COLORS='6125'
+export PAPIS_ZSH_COMPLETION_DIR="~/.config/papis/"
+export NNN_ARCHIVE="\\.(7z|a|ace|alz|arc|arj|bz|bz2|cab|cpio|deb|gz|jar|lha|lz|lzh|lzma|lzo|rar|rpm|rz|t7z|tar|tbz|tbz2|tgz|tlz|txz|tZ|tzo|war|xpi|xz|Z|zip)$"
+BLK="04" CHR="04" DIR="04" EXE="00" REG="00" HARDLINK="00" SYMLINK="06" MISSING="00" ORPHAN="01" FIFO="0F" SOCK="0F" OTHER="02"
+export NNN_FCOLORS="$BLK$CHR$DIR$EXE$REG$HARDLINK$SYMLINK$MISSING$ORPHAN$FIFO$SOCK$OTHER"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+# Fig post block. Keep at the bottom of this file.
+[[ -f "$HOME/.fig/shell/zprofile.post.zsh" ]] && builtin source "$HOME/.fig/shell/zprofile.post.zsh"
