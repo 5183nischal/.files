@@ -230,11 +230,11 @@ map cmd+0                         restore_font_size
 
 hide_window_decorations titlebar-only
 macos_option_as_alt no
-macos_titlebar_color background
+# macos_titlebar_color background
 
 
-dim_opacity 1
-background_opacity 1
+dim_opacity 0.99
+background_opacity 0.9
 background_tint 1
 background_tint_gaps 1
 
@@ -245,9 +245,6 @@ enabled_layouts all
 
 
 # BEGIN_KITTY_THEME
-# Catppuccin-Mocha
-include current-theme.conf
+# Gruvbox Material Dark Hard
+include gruvbox-dark.conf
 # END_KITTY_THEME
-
-# Added by Gogh
-include colors.conf

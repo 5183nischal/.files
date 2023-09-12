@@ -1,19 +1,11 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!ds
-
-
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets. It is optional.
 (setq user-full-name "Nischal Mainali"
       user-mail-address "nm2508@nyu.edu"
       +doom-dashboard-banner-dir doom-private-dir
       +doom-dashboard-banner-file "favicon-pixel.png"
-      +doom-dashboard-banner-padding '(0 . 2)
+      +doom-dashboard-banner-padding '(0 . 3)
       pixel-scroll-precision-mode t)
-
-(server-start)
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -27,8 +19,8 @@
 ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
 ;;
-;; (setq doom-font (font-spec :family "Iosevka SS04" :size 15 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 15))
+;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -38,7 +30,17 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-;; (setq doom-theme 'doom-one)
+(setq doom-theme 'doom-one)
+
+;; This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type 'relative)
+
+;; If you use `org' and don't want your org files in the default location below,
+;; change `org-directory'. It must be set before org loads!
+(setq org-directory "~/Documents/org/")
+(setq projectile-project-search-path '("~/Documents/projects" ))
+
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
@@ -72,19 +74,14 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(setq projectile-project-search-path '("~/Documents/projects" ))
-
-(setq scroll-margin 2
-      auto-save-default t
+(setq scroll-margin 5
       delete-by-moving-to-trash t
       truncate-string-ellipsis "…"
       browse-url-browser-function 'xwidget-webkit-browse-url)
 
-(setq auto-save-visited-interval 15)
-(auto-save-visited-mode +1)
-
 (global-subword-mode 1)
-(global-copilot-mode 1)
+;; (flycheck-mode -1)
+(setq avy-all-windows t)
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
 
@@ -98,6 +95,80 @@
 
 (if (> emacs-major-version 28)
     (pixel-scroll-precision-mode))
+
+(setq vterm-kill-buffer-on-exit t)
+
+(when IS-MAC
+  (setq exec-path-from-shell-check-startup-files nil))
+
+(when IS-MAC (setq ns-use-thin-smoothing t))
+
+;; Keybonds
+(global-set-key [(hyper a)] 'mark-whole-buffer)
+(global-set-key [(hyper v)] 'yank)
+(global-set-key [(hyper c)] 'kill-ring-save)
+(global-set-key [(hyper s)] 'save-buffer)
+(global-set-key [(hyper l)] 'goto-line)
+(global-set-key [(hyper w)]
+                (lambda () (interactive) (delete-window)))
+(global-set-key [(hyper z)] 'undo)
+
+;; mac switch meta key
+(defun mac-switch-meta nil
+  "switch meta between Option and Command"
+  (interactive)
+  (if (eq mac-option-modifier nil)
+      (progn
+	(setq mac-option-modifier 'meta)
+	(setq mac-command-modifier 'hyper)
+	)
+    (progn
+      (setq mac-option-modifier nil)
+      (setq mac-command-modifier 'meta)
+      )
+    )
+  )
+
+;;what's up with super key??
+(map!
+ :n "C-s" #'save-buffer
+ :n "C-/" #'evil-avy-goto-char-timer
+ :n "q" #'kill-current-buffer
+ :v "v" #'er/expand-region
+ :v "V" #'er/contract-region
+
+ :vgni "s-x" #'execute-extended-command
+ :vgni "s-," #'+vertico/switch-workspace-buffer
+ :vgni "s-/" #'consult-buffer
+ :vgni "s-f" #'consult-line
+ :vgni "s-." #'+workspace/switch-to
+ :vgni "C-<tab>" #'mode-line-other-buffer
+ :vgni "H-s-x" #'execute-extended-command
+ :vgni "H-s-," #'+vertico/switch-workspace-buffer
+ :vgni "H-s-/" #'consult-buffer
+ :vgni "H-s-." #'+workspace/switch-to
+ :vgni "s-1"   #'+workspace/switch-to-0
+ :vgni "s-2"   #'+workspace/switch-to-1
+ :vgni "s-3"   #'+workspace/switch-to-2
+ :vgni "s-4"   #'+workspace/switch-to-3
+ :vgni "s-5"   #'+workspace/switch-to-4
+ :vgni "s-6"   #'+workspace/switch-to-5
+ :vgni "s-7"   #'+workspace/switch-to-6
+ :vgni "s-8"   #'+workspace/switch-to-7
+ :vgni "s-9"   #'+workspace/switch-to-8
+ :vgni "s-0"   #'+workspace/switch-to-final)
+
+(map!
+ :n "C-h" #'evil-window-left
+ :n "C-j" #'evil-window-down
+ :n "C-k" #'evil-window-up
+ :n "C-l" #'evil-window-right
+
+ (:map evil-window-map
+  "-" (lambda () (interactive) (evil-window-decrease-height 7))
+  "+" (lambda () (interactive) (evil-window-increase-height 7))
+  "<" (lambda () (interactive) (evil-window-decrease-width 7))
+  ">" (lambda () (interactive) (evil-window-increase-width 7))))
 
 (map! :leader
       (:prefix ("r" . "registers")
@@ -172,165 +243,67 @@
 
 (defalias 'year-calendar 'dt/year-calendar)
 
-;;what's up with super key??
-(map!
- :n "C-s" #'save-buffer
- :n "C-/" #'evil-avy-goto-char-timer
- :n "q" #'kill-current-buffer
- :v "v" #'er/expand-region
- :v "V" #'er/contract-region
+(map! :after evil-org
+      :map evil-org-mode-map
+      :leader
+      :desc "tangle" :n "ct" #'org-babel-tangle
+      :localleader
+      :desc "Hydra" :n "," #'jupyter-org-hydra/body
+      :desc "Inspect at point" :n "?" #'jupyter-inspect-at-point
+      :desc "Execute and step" :n "RET" #'jupyter-org-execute-and-next-block
+      :desc "Delete code block" :n "x" #'jupyter-org-kill-block-and-results
+      :desc "New code block above" :n "+" #'jupyter-org-insert-src-block
+      :desc "New code block below" :n "=" (λ! () (interactive) (jupyter-org-insert-src-block t nil))
+      :desc "Merge code blocks" :n "m" #'jupyter-org-merge-blocks
+      ;; :desc "Split code block" :n "-" #'jupyter-org-split-src-block
+      :desc "Split code block" :n "-" #'org-babel-demarcate-block
+      :desc "Fold results" :n "z" #'org-babel-hide-result-toggle
 
- :vgni "s-x" #'execute-extended-command
- :vgni "s-," #'+vertico/switch-workspace-buffer
- :vgni "s-/" #'consult-buffer
- :vgni "s-f" #'consult-line
- :vgni "s-." #'+workspace/switch-to
- :vgni "C-<tab>" #'mode-line-other-buffer
- :vgni "H-s-x" #'execute-extended-command
- :vgni "H-s-," #'+vertico/switch-workspace-buffer
- :vgni "H-s-/" #'consult-buffer
- :vgni "H-s-." #'+workspace/switch-to
- :vgni "s-1"   #'+workspace/switch-to-0
- :vgni "s-2"   #'+workspace/switch-to-1
- :vgni "s-3"   #'+workspace/switch-to-2
- :vgni "s-4"   #'+workspace/switch-to-3
- :vgni "s-5"   #'+workspace/switch-to-4
- :vgni "s-6"   #'+workspace/switch-to-5
- :vgni "s-7"   #'+workspace/switch-to-6
- :vgni "s-8"   #'+workspace/switch-to-7
- :vgni "s-9"   #'+workspace/switch-to-8
- :vgni "s-0"   #'+workspace/switch-to-final)
+      :map org-src-mode-map
+      :localleader
+      :desc "Exit edit" :n "'" #'org-edit-src-exit)
 
-(map!
- :n "C-h" #'evil-window-left
- :n "C-j" #'evil-window-down
- :n "C-k" #'evil-window-up
- :n "C-l" #'evil-window-right
+(setq org-babel-default-header-args:jupyter-python '((:async . "yes")
+                                                    (:kernel . "python3")))
+(unless (getenv "CONDA_DEFAULT_ENV")
+  (conda-env-activate "base"))
 
- (:map evil-window-map
-  "-" (lambda () (interactive) (evil-window-decrease-height 7))
-  "+" (lambda () (interactive) (evil-window-increase-height 7))
-  "<" (lambda () (interactive) (evil-window-decrease-width 7))
-  ">" (lambda () (interactive) (evil-window-increase-width 7))))
-
-(use-package! emacs-everywhere
- :if (daemonp)
-  :config
-  (require 'spell-fu)
-  (setq emacs-everywhere-major-mode-function #'org-mode
-        emacs-everywhere-frame-name-format "Edit ∷ %s — %s")
-  (defadvice! emacs-everywhere-raise-frame ()
-    :after #'emacs-everywhere-set-frame-name
-    (setq emacs-everywhere-frame-name (format emacs-everywhere-frame-name-format
-                                (emacs-everywhere-app-class emacs-everywhere-current-app)
-                                (truncate-string-to-width
-                                 (emacs-everywhere-app-title emacs-everywhere-current-app)
-                                 45 nil nil "…")))
-    ;; need to wait till frame refresh happen before really set
-    (run-with-timer 0.1 nil #'emacs-everywhere-raise-frame-1))
-  (defun emacs-everywhere-raise-frame-1 ()
-    (call-process "wmctrl" nil nil nil "-a" emacs-everywhere-frame-name)))
-
-;;fonts
-(setq doom-font (font-spec :family "JetBrains Mono" :size 17)
-      doom-big-font (font-spec :family "JetBrains Mono" :size 22)
-      doom-variable-pitch-font (font-spec :family "IBM Plex Sans" :size 18)
+(setq doom-theme 'doom-catppuccin)
+(setq doom-font (font-spec :family "JetBrains Mono" :size 13)
+      doom-big-font (font-spec :family "JetBrains Mono" :size 18)
+      doom-variable-pitch-font (font-spec :family "IBM Plex Sans" :size 15)
       doom-unicode-font (font-spec :family "JuliaMono")
-      doom-serif-font (font-spec :family "IBM Plex Sans" :size 18 :weight 'medium))
+      doom-serif-font (font-spec :family "IBM Plex Sans" :size 15 :weight 'medium))
+
 
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
   '(font-lock-keyword-face :slant italic))
 
-;; (setq scroll-preserve-screen-position t
-;;       scroll-conservatively 0
-;;       maximum-scroll-margin 0.5
-;;       scroll-margin 99999)
+(set-frame-parameter (selected-frame) 'alpha '(100 100))
+(add-to-list 'default-frame-alist '(alpha 100 100))
 
-
-(setq ns-use-proxy-icon nil)
-(modify-all-frames-parameters '((ns-appearance . dark)
-                                (ns-transparent-titlebar . t)))
-;; (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-;; (add-to-list 'default-frame-alist '(ns-appearance . dark))
-(setq ns-use-native-fullscreen t)
-(setq ns-auto-titlebar-mode t)
-(setq frame-title-format nil)
-(setq frame-resize-pixelwise t)
-
-(setq default-frame-alist '((scroll-bar-background . "transparent")))
-
-(add-to-list 'default-frame-alist '(undecorated-round . t)) ;; was in earlyinit.el
-(setq mac-command-modifier 'super)
-(setq mac-option-modifier 'meta)
-
-;; (set-frame-parameter (selected-frame) 'alpha 85)
-(force-mode-line-update)
-
-(when IS-MAC
-  ;; NOTE: Not tangled
-  (set-frame-parameter (selected-frame) 'alpha '(98 100))
-  (add-to-list 'default-frame-alist '(alpha 98 100))
-  ;; (set-frame-parameter (selected-frame) 'alpha '(81 . 81))
-  ;; (add-to-list 'default-frame-alist '(alpha . (81 . 81)))
-  (add-to-list 'default-frame-alist '(inhibit-double-buffering . t)))
-
-(use-package doom-themes
-  ;; :ensure t
-  :config
-  ;; Global settings (defaults)
-  (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
-  (setq doom-gruvbox-dark-variant "light")
-  (setq doom-gruvbox-light-variant "light")
-
-  ;; (load-theme 'doom-gruvbox-light t)
-
-  (require 'hl-line)
-  (defun mac-appearance-change-hook ()
-    (let ((appearance (plist-get (mac-application-state) :appearance)))
-      (cond (
-             (equal appearance "NSAppearanceNameAqua")
-             (disable-theme 'doom-gruvbox)
-             (load-theme 'doom-gruvbox-light t)
-             ;; (set-face-attribute 'hl-line nil :inherit nil :background "#f9f5d7")
-             )
-            (
-             (equal appearance "NSAppearanceNameDarkAqua")
-             (disable-theme 'doom-gruvbox-light)
-             (load-theme 'doom-nord t)
-             ;; (set-face-attribute 'hl-line nil :inherit nil :background "gray9")
-             ))))
-  (add-hook 'after-init-hook 'mac-appearance-change-hook)
-  (add-hook 'mac-effective-appearance-change-hook 'mac-appearance-change-hook)
-
-  ;; Enable flashing mode-line on errors
-  ;; (doom-themes-visual-bell-config)
-  ;; Enable custom neotree theme (all-the-icons must be installed!)
-  (doom-themes-neotree-config)
-  ;; or for treemacs users
-  ;; (setq doom-themes-treemacs-theme "doom-atom") ; use "doom-colors" for less minimal icon theme
-  (doom-themes-treemacs-config)
-  ;; Corrects (and improves) org-mode's native fontification.
-  (doom-themes-org-config)
-  (custom-set-faces
-   `(fringe ((nil))))
-  ;; Inspired by https://github.com/tarsius/moody
-  (let ((line (face-attribute 'mode-line :underline)))
-    (set-face-attribute 'mode-line nil :overline   line)
-    (set-face-attribute 'mode-line-inactive nil :overline   line)
-    (set-face-attribute 'mode-line-inactive nil :underline  line)
-    (set-face-attribute 'mode-line nil :box nil)
-    (set-face-attribute 'mode-line-inactive nil :box nil))
-    ;; (set-face-attribute 'mode-line-inactive nil :background "#212121" :foreground "#5B6268"))
-  )
-
-;; Stretch cursor to the glyph width
-(setq-default x-stretch-cursor t)
-;; Enable relative line numbers
-(setq display-line-numbers-type 'relative)
-;; Enable beacon mode
+(use-package all-the-icons)
 (beacon-mode 1)
+
+
+(after! text-mode
+  (add-hook! 'text-mode-hook
+    (unless (derived-mode-p 'org-mode)
+      ;; Apply ANSI color codes
+      (with-silent-modifications
+        (ansi-color-apply-on-region (point-min) (point-max) t)))))
+
+(setq frame-title-format
+    '(""
+      (:eval
+       (if (s-contains-p org-roam-directory (or buffer-file-name ""))
+           (replace-regexp-in-string ".*/[0-9]*-?" "🢔 " buffer-file-name)
+         "%b"))
+      (:eval
+       (let ((project-name (projectile-project-name)))
+         (unless (string= "-" project-name)
+           (format (if (buffer-modified-p)  " ◉ %s" "  ●  %s") project-name))))))
 
 (defvar +text-mode-left-margin-width 1
   "The `left-margin-width' to be used in `text-mode' buffers.")
@@ -366,19 +339,29 @@
   (if (not buffer-read-only) (delete-trailing-whitespace)))
 (add-hook 'before-save-hook 'mb/delete-trailing-whitespace)
 
-(after! text-mode
-  (add-hook! 'text-mode-hook
-    (unless (derived-mode-p 'org-mode)
-      ;; Apply ANSI color codes
-      (with-silent-modifications
-        (ansi-color-apply-on-region (point-min) (point-max) t)))))
+(use-package moody
+  :config
+  (setq x-underline-at-descent-line t)
 
-(map! :leader
-      (:prefix ("t" . "toggle")
-       :desc "Toggle line numbers"            "l" #'doom/toggle-line-numbers
-       :desc "Toggle line highlight in frame" "h" #'hl-line-mode
-       :desc "Toggle line highlight globally" "H" #'global-hl-line-mode
-       :desc "Toggle truncate lines"          "t" #'toggle-truncate-lines))
+  (setq-default mode-line-format
+                '(" "
+                  mode-line-front-space
+                  mode-line-client
+                  mode-line-frame-identification
+                  mode-line-buffer-identification " " mode-line-position
+                  (vc-mode vc-mode)
+                  (multiple-cursors-mode mc/mode-line)
+                  " " mode-line-modes
+                  mode-line-end-spaces))
+
+  (use-package minions
+    :config
+    (minions-mode +1))
+
+  (setq global-mode-string (remove 'display-time-string global-mode-string))
+
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
 (define-globalized-minor-mode global-rainbow-mode rainbow-mode
   (lambda ()
@@ -387,51 +370,8 @@
      (rainbow-mode 1))))
 (global-rainbow-mode 1 )
 
-(defun prefer-horizontal-split ()
-  (set-variable 'split-height-threshold nil t)
-  (set-variable 'split-width-threshold 40 t)) ; make this as low as needed
-(add-hook 'markdown-mode-hook 'prefer-horizontal-split)
-(map! :leader
-      :desc "Clone indirect buffer other window" "b c" #'clone-indirect-buffer-other-window)
-
-(when IS-MAC
-  (setq exec-path-from-shell-check-startup-files nil))
-
-(when IS-MAC (setq ns-use-thin-smoothing t))
-
-;; Keybonds
-(global-set-key [(hyper a)] 'mark-whole-buffer)
-(global-set-key [(hyper v)] 'yank)
-(global-set-key [(hyper c)] 'kill-ring-save)
-(global-set-key [(hyper s)] 'save-buffer)
-(global-set-key [(hyper l)] 'goto-line)
-(global-set-key [(hyper w)]
-                (lambda () (interactive) (delete-window)))
-(global-set-key [(hyper z)] 'undo)
-
-;; mac switch meta key
-(defun mac-switch-meta nil
-  "switch meta between Option and Command"
-  (interactive)
-  (if (eq mac-option-modifier nil)
-      (progn
-	(setq mac-option-modifier 'meta)
-	(setq mac-command-modifier 'hyper)
-	)
-    (progn
-      (setq mac-option-modifier nil)
-      (setq mac-command-modifier 'meta)
-      )
-    )
-  )
-
 ;; Increase undo history limits even more
 (after! undo-fu
-  ;; Emacs undo defaults
-  (setq undo-limit        10000000    ;; 1MB   (default is 160kB, Doom's default is 400kB)
-        undo-strong-limit 100000000   ;; 100MB (default is 240kB, Doom's default is 3MB)
-        undo-outer-limit  1000000000) ;; 1GB   (default is 24MB,  Doom's default is 48MB)
-
   ;; Undo-fu customization options
   (setq undo-fu-allow-undo-in-region t ;; Undoing with a selection will use undo within that region.
         undo-fu-ignore-keyboard-quit t)) ;; Use the `undo-fu-disable-checkpoint' command instead of Ctrl-G `keyboard-quit' for non-linear behavior.
@@ -475,21 +415,21 @@
           :nie "[" #'sp-wrap-square
           :nie "{" #'sp-wrap-curly))
 
-(use-package! org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
-  :config
-  (setq org-auto-tangle-default t))
+;; accept completion from copilot and fallback to company
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :bind (:map copilot-completion-map
+              ("S-<tab>" . 'copilot-accept-completion)
+              ("S-TAB" . 'copilot-accept-completion)
+              ("C-TAB" . 'copilot-accept-completion-by-word)
+              ("C-<tab>" . 'copilot-accept-completion-by-word)))
 
-(defun dt/insert-auto-tangle-tag ()
-  "Insert auto-tangle tag in a literate config."
-  (interactive)
-  (evil-org-open-below 1)
-  (insert "#+auto_tangle: t ")
-  (evil-force-normal-state))
+(customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
 
-(map! :leader
-      :desc "Insert auto_tangle tag" "i a" #'dt/insert-auto-tangle-tag)
+;; (global-copilot-mode 1)
+
+(map! :nvom "H" #'evil-first-non-blank)
+(map! :nvom "L" #'evil-last-non-blank)
 
 (use-package! evil-escape
   :config
@@ -562,6 +502,24 @@
    '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
    '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))
    ))
+
+
+(evil-define-command +evil-buffer-org-new (count file)
+  "Creates a new ORG buffer replacing the current window, optionally
+   editing a certain FILE"
+  :repeat nil
+  (interactive "P<f>")
+  (if file
+      (evil-edit file)
+    (let ((buffer (generate-new-buffer "*new org*")))
+      (set-window-buffer nil buffer)
+      (with-current-buffer buffer
+        (org-mode)
+        (setq-local doom-real-buffer-p t)))))
+
+(map! :leader
+      (:prefix "b"
+       :desc "New empty Org buffer" "o" #'+evil-buffer-org-new))
 
 (require 'org-protocol)
 (after! org
@@ -647,327 +605,6 @@
 
     (setq org-modules (quote (org-protocol)))
     )
-
-;;
-;; (use-package! org-super-agenda
-;;   :after org-agenda
-;;   :init
-;;   (setq org-super-agenda-groups '((:name "Today"
-;;                                   :time-grid t
-;;                                   :scheduled today)
-;;                            (:name "Due today"
-;;                                   :deadline today)
-;;                            (:name "Important"
-;;                                   :priority "A")
-;;                            (:name "Overdue"
-;;                                   :deadline past)
-;;                            (:name "Due soon"
-;;                                   :deadline future)
-;;                            (:name "Big Outcomes"
-;;                                   :tag "bo")))
-;;   :config
-;;   (org-super-agenda-mode)
-;; )
-
-;; accept completion from copilot and fallback to company
-(use-package! copilot
-  :hook (prog-mode . copilot-mode)
-  :bind (:map copilot-completion-map
-              ("S-<tab>" . 'copilot-accept-completion)
-              ("S-TAB" . 'copilot-accept-completion)
-              ("C-TAB" . 'copilot-accept-completion-by-word)
-              ("C-<tab>" . 'copilot-accept-completion-by-word)))
-
-(customize-set-variable 'copilot-enable-predicates '(evil-insert-state-p))
-
-(use-package! gptel
- :config
- (setq! gptel-api-key "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"))
-
-;; https://github.com/alexluigit/dirvish
-
-;;; ../dotfiles/emacs/.doom.d/+dirvish.el -*- lexical-binding: t; -*-
-
-
-;; https://github.com/alexluigit/dirvish
-(use-package! dirvish
-  :config
-  (setq dired-kill-when-opening-new-dired-buffer t) ; added in emacs 28
-  (setq dired-clean-confirm-killing-deleted-buffers nil)
-  (setq dired-recursive-copies 'always)
-  (setq dired-recursive-deletes 'always)
-  (setq dired-dwim-target t)
-  (setq dirvish-use-header-line nil)     ; hide header line (show the classic dired header)
-  ;; (setq dired-listing-switches
-  ;;       "-AGhlv --group-directories-first --sort=time")
-  (setq dirvish-hide-details t) ;; toggleable via dirvish-dispatch `? ('
-  (setq dired-omit-files nil) ;; don't hide any files
-  (setq delete-by-moving-to-trash t)
-  (setq dired-listing-switches
-        "-l --almost-all --human-readable --group-directories-first --no-group")
-
-  (map! :map dirvish-mode-map
-        :n "b" #'dirvish-goto-bookmark
-        :n "z" #'dirvish-show-history
-        :n "f" #'dirvish-file-info-menu
-        :n "F" #'dirvish-toggle-fullscreen
-        :n "l" #'dired-find-file
-        :n "h" #'dired-up-directory
-        :n "?" #'dirvish-dispatch
-        :localleader
-        "h" #'dired-omit-mode))
-
-;; in case you want to keep the +all flag in the popup
-(set-popup-rule! "^ \\*Dirvish.*" :ignore t)
-;; pdf previewr
-(setq dirvish-preview-dispatchers
-      (cl-substitute 'pdf-preface 'pdf dirvish-preview-dispatchers))
-
-(use-package pdf-view
-  :hook (pdf-tools-enabled . pdf-view-midnight-minor-mode)
-  :hook (pdf-tools-enabled . hide-mode-line-mode)
-  :config
-  (setq pdf-view-midnight-colors '("#ABB2BF" . "#282C35"))
-  (setq-default pdf-view-display-size 'fit-page)
-  (setq pdf-view-use-scaling t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Dired
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(use-package! dired
-  :config
-  (when (string= system-type "darwin")
-    (setq dired-use-ls-dired nil))
-  (enable-command 'dired-find-alternate-file)
-  (map!
-   ;; :n "-" #'dired-jump
-   :n "-" #'dirvish
-   :map dired-mode-map
-   :n "-"        #'dired-up-directory
-   :n "<return>" #'dired-find-alternate-file
-   :n "/"        #'dired
-   :n "q"        (cmd! (quit-window t))))
-
-(use-package moody
-  ;; :ensure t
-  :config
-  (setq x-underline-at-descent-line t)
-  (setq-default mode-line-format
-                '(" "
-                  mode-line-front-space
-                  mode-line-client
-                  mode-line-frame-identification
-                  mode-line-buffer-identification " " mode-line-position
-                  (vc-mode vc-mode)
-                  (multiple-cursors-mode mc/mode-line)
-                  " " mode-line-modes
-                  mode-line-end-spaces))
-
-  (use-package minions
-    ;; :ensure t
-    :config
-    (minions-mode +1))
-
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode)
-
-  (setq-default x-underline-at-descent-line t
-                column-number-mode t))
-
-(setq vterm-always-compile-module t)
-(setq vterm-kill-buffer-on-exit t)
-
-(after! vterm
-  (setf (alist-get "magit-status" vterm-eval-cmds nil nil #'equal)
-        '((lambda (path)
-            (magit-status path)))))
-
-(setq +ligatures-in-modes t)
-
-(after! vertico
-  ;; settings
-  (setq vertico-resize nil        ; How to resize the Vertico minibuffer window.
-        vertico-count 17          ; Maximal number of candidates to show.
-        vertico-count-format nil) ; No prefix with number of entries
-
-  ;; looks
-  (setq vertico-grid-separator
-        #("  |  " 2 3 (display (space :width (1))
-                               face (:background "#ECEFF1")))
-        vertico-group-format
-        (concat #(" " 0 1 (face vertico-group-title))
-                #(" " 0 1 (face vertico-group-separator))
-                #(" %s " 0 4 (face vertico-group-title))
-                #(" " 0 1 (face vertico-group-separator
-                            display (space :align-to (- right (-1 . right-margin) (- +1)))))))
-  (set-face-attribute 'vertico-group-separator nil
-                      :strike-through t)
-
-  ;; minibuffer tweaks
-  (defun my/vertico--resize-window (height)
-    "Resize active minibuffer window to HEIGHT."
-      (setq-local truncate-lines t
-                  resize-mini-windows 'grow-only
-                  max-mini-window-height 1.0)
-    (unless (frame-root-window-p (active-minibuffer-window))
-      (unless vertico-resize
-        (setq height (max height vertico-count)))
-      (let* ((window-resize-pixelwise t)
-             (dp (- (max (cdr (window-text-pixel-size))
-                         (* (default-line-height) (1+ height)))
-                    (window-pixel-height))))
-        (when (or (and (> dp 0) (/= height 0))
-                  (and (< dp 0) (eq vertico-resize t)))
-          (window-resize nil dp nil nil 'pixelwise)))))
-
-  (advice-add #'vertico--resize-window :override #'my/vertico--resize-window)
-
-  ;; completion at point
-  (setq completion-in-region-function
-        (lambda (&rest args)
-          (apply (if vertico-mode
-                     #'consult-completion-in-region
-                   #'completion--in-region)
-                 args)))
-  (defun minibuffer-format-candidate (orig cand prefix suffix index _start)
-    (let ((prefix (if (= vertico--index index)
-                      "  "
-                    "   ")))
-      (funcall orig cand prefix suffix index _start)))
-  (advice-add #'vertico--format-candidate
-             :around #'minibuffer-format-candidate)
-  (defun vertico--prompt-selection ()
-    "Highlight the prompt"
-
-    (let ((inhibit-modification-hooks t))
-      (set-text-properties (minibuffer-prompt-end) (point-max)
-                           '(face (nano-strong nano-salient)))))
-  (defun minibuffer-vertico-setup ()
-    (setq truncate-lines t)
-    (setq completion-in-region-function
-          (if vertico-mode
-              #'consult-completion-in-region
-            #'completion--in-region)))
-
-  (add-hook 'vertico-mode-hook #'minibuffer-vertico-setup)
-  (add-hook 'minibuffer-setup-hook #'minibuffer-vertico-setup))
-
-(after! marginalia
-  (setq marginalia-censor-variables nil)
-
-  (defadvice! +marginalia--anotate-local-file-colorful (cand)
-    "Just a more colourful version of `marginalia--anotate-local-file'."
-    :override #'marginalia--annotate-local-file
-    (when-let (attrs (file-attributes (substitute-in-file-name
-                                       (marginalia--full-candidate cand))
-                                      'integer))
-      (marginalia--fields
-       ((marginalia--file-owner attrs)
-        :width 12 :face 'marginalia-file-owner)
-       ((marginalia--file-modes attrs))
-       ((+marginalia-file-size-colorful (file-attribute-size attrs))
-        :width 7)
-       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
-        :width 12))))
-
-  (defun +marginalia--time-colorful (time)
-    (let* ((seconds (float-time (time-subtract (current-time) time)))
-           (color (doom-blend
-                   (face-attribute 'marginalia-date :foreground nil t)
-                   (face-attribute 'marginalia-documentation :foreground nil t)
-                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
-      ;; 1 - log(3 + 1/(days + 1)) % grey
-      (propertize (marginalia--time time) 'face (list :foreground color))))
-
-  (defun +marginalia-file-size-colorful (size)
-    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
-           (color (if (< size-index 10000000) ; 10m
-                      (doom-blend 'orange 'green size-index)
-                    (doom-blend 'red 'orange (- size-index 1)))))
-      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
-
-(after! marginalia
-  (setq marginalia--ellipsis "…"    ; Nicer ellipsis
-        marginalia-align 'right     ; right alignment
-        marginalia-align-offset -1)) ; one space on the right
-
-(setq bookmark-default-file "~/.config/doom/bookmarks")
-
-(map! :leader
-      (:prefix ("b". "buffer")
-       :desc "List bookmarks"                          "L" #'list-bookmarks
-       :desc "Set bookmark"                            "m" #'bookmark-set
-       :desc "Delete bookmark"                         "M" #'bookmark-set
-       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
-
-(global-auto-revert-mode 1)
-(setq global-auto-revert-non-file-buffers t)
-
-(evil-define-key 'normal ibuffer-mode-map
-  (kbd "f c") 'ibuffer-filter-by-content
-  (kbd "f d") 'ibuffer-filter-by-directory
-  (kbd "f f") 'ibuffer-filter-by-filename
-  (kbd "f m") 'ibuffer-filter-by-mode
-  (kbd "f n") 'ibuffer-filter-by-name
-  (kbd "f x") 'ibuffer-filter-disable
-  (kbd "g h") 'ibuffer-do-kill-lines
-  (kbd "g H") 'ibuffer-update)
-
-(after! org
-  (setq org-startup-with-inline-images t)
-  (add-hook 'org-babel-after-execute-hook 'clear-image-cache)
-  (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
-  (setq-local org-image-actual-width '(512))
-  (setq org-src-window-setup 'current-window))
-
-
-(evil-define-command +evil-buffer-org-new (count file)
-  "Creates a new ORG buffer replacing the current window, optionally
-   editing a certain FILE"
-  :repeat nil
-  (interactive "P<f>")
-  (if file
-      (evil-edit file)
-    (let ((buffer (generate-new-buffer "*new org*")))
-      (set-window-buffer nil buffer)
-      (with-current-buffer buffer
-        (org-mode)
-        (setq-local doom-real-buffer-p t)))))
-
-(map! :leader
-      (:prefix "b"
-       :desc "New empty Org buffer" "o" #'+evil-buffer-org-new))
-
-(cl-defmacro lsp-org-babel-enable (lang)
-  "Support LANG in org source code block."
-  (setq centaur-lsp 'lsp-mode)
-  (cl-check-type lang stringp)
-  (let* ((edit-pre (intern (format "org-babel-edit-prep:%s" lang)))
-         (intern-pre (intern (format "lsp--%s" (symbol-name edit-pre)))))
-    `(progn
-       (defun ,intern-pre (info)
-         (let ((file-name (->> info caddr (alist-get :file))))
-           (unless file-name
-             (setq file-name (make-temp-file "babel-lsp-")))
-           (setq buffer-file-name file-name)
-           (lsp-deferred)))
-       (put ',intern-pre 'function-documentation
-            (format "Enable lsp-mode in the buffer of org source block (%s)."
-                    (upcase ,lang)))
-       (if (fboundp ',edit-pre)
-           (advice-add ',edit-pre :after ',intern-pre)
-         (progn
-           (defun ,edit-pre (info)
-             (,intern-pre info))
-           (put ',edit-pre 'function-documentation
-                (format "Prepare local buffer environment for org source block (%s)."
-                        (upcase ,lang))))))))
-
-(defvar org-babel-lang-list
-  '("go" "python" "ipython" "jupyter" "bash" "sh"))
-(dolist (lang org-babel-lang-list)
-  (eval `(lsp-org-babel-enable ,lang)))
 
 (setq eros-eval-result-prefix "⟹ ")
 
@@ -1535,8 +1172,46 @@ URL `https://tex.stackexchange.com/questions/188287/auctex-folding-and-square-br
 (after! citar
   (setq org-cite-global-bibliography '("/Users/nisch/Library/texmf/bibtex/bib/Zotero.bib"))
   (setq! citar-bibliography '("/Users/nisch/Library/texmf/bibtex/bib/Zotero.bib"))
-  (setq! citar-library-paths '("/Users/nisch/Documents/papers_library/papers"))
+  (setq! citar-library-paths '("/Users/nisch/Documents/papers_library/papers")
+         citar-notes-paths '("/Users/nisch/Documents/papers_library/paper_notes"))
+  ;;   (setq citar-templates
+  ;;     '((main . "${author:30}     ${date year issued:4}     ${title:48}")
+  ;;       (suffix . "          ${=key= id:15}    ${=type=:12}    ${tags keywords keywords:*}")
+  ;;       (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+  ;;       (note . "${title}\n\n * notes:
+  ;; :PROPERTIES:
+  ;; :Custom_ID: ${=key=}
+  ;; :AUTHOR: ${author}
+  ;; :NOTER_DOCUMENT: ${file}
+  ;; :END:")))
   )
+
+(citar-org-roam-mode)
+(add-to-list 'citar-org-roam-template-fields '(:citar-file . ("file")))
+(setq citar-org-roam-note-title-template "${title}")
+(setq org-roam-capture-templates
+      '(
+        ("d" "default" plain
+         "%?"
+         :target
+         (file+head
+          "%<%Y%m%d%H%M%S>-${slug}.org"
+          "#+title: ${note-title}\n")
+         :unnarrowed t)
+        ("p" "paper" plain
+         "%?"
+         :target
+         (file+head
+          "~/Documents/papers_library/paper_notes/${citar-citekey}.org"
+          "${citar-citekey} - ${note-title}\n* notes:
+:PROPERTIES:
+:NOTER_DOCUMENT: ${citar-file}
+:END:\n")
+         :immediate-finish t
+         :unnarrowed t)
+        ))
+(setq org-noter-supported-modes '(doc-view-mode pdf-view-mode nov-mode))
+(setq org-noter-highlight-selected-text t)
 
 (after! treemacs
   (defvar treemacs-file-ignore-extensions '()
@@ -1587,100 +1262,6 @@ URL `https://tex.stackexchange.com/questions/188287/auctex-folding-and-square-br
         "*/_region_.log"
         "*/_region_.tex"))
 
-;; (use-package! lsp-ltex
-;;   :commands (+lsp-ltex-toggle
-;;              +lsp-ltex-enable
-;;              +lsp-ltex-disable
-;;              +lsp-ltex-setup)
-;;   :hook ((latex-mode LaTeX-mode org-mode markdown-mode html-mode bibtex-mode) . #'+lsp-ltex-setup)
-;;   :init
-;;   ;; There is some problematic modes when it comes to enabling LSP
-;;   (defvar +lsp-ltex-disabled-modes '(org-msg-edit-mode))
-;;   :config
-;;   ;; Add doom-docs-mode to LSP language IDs
-;;   (add-to-list 'lsp-language-id-configuration '(doom-docs-org-mode . "org"))
-;;   :init
-;;   (setq lsp-ltex-check-frequency "save"
-;;         lsp-ltex-log-level "warning" ;; No need to log everything
-;;         lsp-ltex-diagnostic-severity "warning"
-;;         lsp-ltex-enabled ["bibtex" "context" "context.tex"
-;;                           "html" "latex" "markdown" "org"
-;;                           "restructuredtext" "rsweave"]
-;;         ;; Path in which, interactively added words and rules will be stored.
-;;         lsp-ltex-user-rules-path (expand-file-name "lsp-ltex" doom-data-dir))
-;;   (setq lsp-ltex-server-store-path nil)
-
-;;   ;; When n-gram data sets are available, use them to detect errors with words
-;;   ;; that are often confused (like their and there).
-;;   ;; (when (file-directory-p "/usr/share/ngrams")
-;;   ;;   (setq lsp-ltex-additional-rules-language-model "/usr/share/ngrams"))
-
-;;   (defun +lsp-ltex-setup ()
-;;     "Load LTeX LSP server."
-;;     (interactive)
-;;     (require 'lsp-ltex)
-;;     (when (and (+lsp-ltex--enabled-p)
-;;                (not (memq major-mode +lsp-ltex-disabled-modes)))
-;;       (lsp-deferred)))
-
-;;   (defun +lsp-ltex--enabled-p ()
-;;     (not (memq 'ltex-ls lsp-disabled-clients)))
-
-;;   (defun +lsp-ltex-enable ()
-;;     "Enable LTeX LSP for the current buffer."
-;;     (interactive)
-;;     (unless (+lsp-ltex--enabled-p)
-;;       (setq-local lsp-disabled-clients (delq 'ltex-ls lsp-disabled-clients))
-;;       (message "Enabled ltex-ls"))
-;;     (+lsp-ltex-setup))
-
-;;   (defun +lsp-ltex-disable ()
-;;     "Disable LTeX LSP for the current buffer."
-;;     (interactive)
-;;     (when (+lsp-ltex--enabled-p)
-;;       (setq-local lsp-disabled-clients (cons 'ltex-ls lsp-disabled-clients))
-;;       (lsp-disconnect)
-;;       (message "Disabled ltex-ls")))
-
-;;   (defun +lsp-ltex-toggle ()
-;;     "Toggle LTeX LSP for the current buffer."
-;;     (interactive)
-;;     (if (+lsp-ltex--enabled-p)
-;;         (+lsp-ltex-disable)
-;;       (+lsp-ltex-enable)))
-
-;;   (map! :localleader
-;;         :map (text-mode-map latex-mode-map LaTeX-mode-map org-mode-map markdown-mode-map)
-;;         :desc "Toggle grammar check" "G" #'+lsp-ltex-toggle))
-
-;; (after! lsp-ltex
-;;   (setq lsp-ltex-language "auto"
-;;         lsp-ltex-mother-tongue "en"
-;;         flycheck-checker-error-threshold 1000)
-
-;;   (advice-add
-;;    '+lsp-ltex-setup :after
-;;    (lambda ()
-;;      (setq-local lsp-idle-delay 5.0
-;;                  lsp-progress-function #'lsp-on-progress-legacy
-;;                  lsp-progress-spinner-type 'half-circle
-;;                  lsp-ui-sideline-show-code-actions nil
-;;                  lsp-ui-sideline-show-diagnostics nil
-;;                  lsp-ui-sideline-enable nil)))
-
-;;   ;; FIXME
-;;   (defun +lsp-ltex-check-document ()
-;;     (interactive)
-;;     (when-let ((file (buffer-file-name)))
-;;       (let* ((uri (lsp--path-to-uri file))
-;;              (beg (region-beginning))
-;;              (end (region-end))
-;;              (req (if (region-active-p)
-;;                       `(:uri ,uri
-;;                         :range ,(lsp--region-to-range beg end))
-;;                     `(:uri ,uri))))
-;;         (lsp-send-execute-command "_ltex.checkDocument" req)))))
-
 (after! org
   (setq org-highlight-latex-and-related '(native script entities))
   (require 'org-src)
@@ -1717,94 +1298,210 @@ URL `https://tex.stackexchange.com/questions/188287/auctex-folding-and-square-br
       :map (org-mode-map markdown-mode-map latex-mode-map text-mode-map)
       :desc "Paragraphized yank" "y" #'+helper-paragraphized-yank)
 
-(unless (getenv "CONDA_DEFAULT_ENV")
-  (conda-env-activate "base"))
-(setq jupyter-repl-echo-eval-p t)
-(map! :after evil-org
-      :map evil-org-mode-map
-      :leader
-      :desc "tangle" :n "ct" #'org-babel-tangle
-      :localleader
-      :desc "Hydra" :n "," #'jupyter-org-hydra/body
-      :desc "Inspect at point" :n "?" #'jupyter-inspect-at-point
-      :desc "Execute and step" :n "RET" #'jupyter-org-execute-and-next-block
-      :desc "Delete code block" :n "x" #'jupyter-org-kill-block-and-results
-      :desc "New code block above" :n "+" #'jupyter-org-insert-src-block
-      :desc "New code block below" :n "=" (λ! () (interactive) (jupyter-org-insert-src-block t nil))
-      :desc "Merge code blocks" :n "m" #'jupyter-org-merge-blocks
-      ;; :desc "Split code block" :n "-" #'jupyter-org-split-src-block
-      :desc "Split code block" :n "-" #'org-babel-demarcate-block
-      :desc "Fold results" :n "z" #'org-babel-hide-result-toggle
+(use-package! dirvish
+  :config
+  (setq dired-kill-when-opening-new-dired-buffer t) ; added in emacs 28
+  (setq dired-clean-confirm-killing-deleted-buffers nil)
+  (setq dired-recursive-copies 'always)
+  (setq dired-recursive-deletes 'always)
+  (setq dired-dwim-target t)
+  ;; (setq dired-listing-switches
+  ;;       "-AGhlv --group-directories-first --sort=time")
+  (setq dirvish-hide-details t) ;; toggleable via dirvish-dispatch `? ('
+  (setq dired-omit-files nil) ;; don't hide any files
+  (setq delete-by-moving-to-trash t)
+  (setq dired-listing-switches
+        "-l --almost-all --human-readable --group-directories-first --no-group --sort=time")
 
-      :map org-src-mode-map
-      :localleader
-      :desc "Exit edit" :n "'" #'org-edit-src-exit)
+  (setq! dirvish-subtree-state-style 'nerd)
 
-(after! evil-org
-  (setq org-babel-default-header-args:jupyter-python '((:async . "yes")
-                                                       ;; (:pandoc t)
-                                                       (:kernel . "python3"))))
+  (map! :map dirvish-mode-map
+        :n "b" #'dirvish-goto-bookmark
+        :n "z" #'dirvish-show-history
+        :n "f" #'dirvish-file-info-menu
+        :n "F" #'dirvish-toggle-fullscreen
+        :n "l" #'dired-find-file
+        :n "h" #'dired-up-directory
+        :n "?" #'dirvish-dispatch
+        :localleader
+        "h" #'dired-omit-mode))
 
-;; (use-package code-cells
-;;   :config
-;;   ;; (setq code-cells-convert-ipynb-style '(("pandoc" "--to" "ipynb" "--from" "org")
-;;   ;; 					 ("pandoc" "--to" "org" "--from" "ipynb")
-;;   ;; 					 org-mode))
-;;   (let ((map code-cells-mode-map))
-;;     (define-key map (kbd "C-c <up>") 'code-cells-backward-cell)
-;;     (define-key map (kbd "C-c <down>") 'code-cells-forward-cell)
-;;     (define-key map (kbd "M-<up>") 'code-cells-move-cell-up)
-;;     (define-key map (kbd "M-<down>") 'code-cells-move-cell-down)
-;;     (define-key map (kbd "C-c C-c") 'code-cells-eval)
-;;     ;; Overriding other minor mode bindings requires some insistence...
-;;     (define-key map [remap jupyter-eval-line-or-region] 'code-cells-eval)))
-;; (defun my/new-notebook (notebook-name &optional kernel)
-;;   "Creates an empty notebook in the current directory with an associated kernel."
-;;   (interactive "sEnter the notebook name: ")
-;;   (when (file-name-extension notebook-name)
-;;     (setq notebook-name (file-name-sans-extension notebook-name)))
-;;   (unless kernel
-;;     (setq kernel (completing-read "Choose kernel: " (jupyter-available-kernelspecs))))
-;;   (unless (executable-find "jupytext")
-;;     (error "Can't find \"jupytext\""))
-;;   (let ((notebook-py (concat notebook-name ".py")))
-;;     (shell-command (concat "touch " notebook-py))
-;;     (shell-command (concat "jupytext --set-kernel " kernel " " notebook-py))
-;;     (shell-command (concat "jupytext --to notebook " notebook-py))
-;;     (shell-command (concat "rm " notebook-py))
-;;     (message (concat "Notebook successfully created at " notebook-name ".ipynb"))))
+;; in case you want to keep the +all flag in the popup
+(set-popup-rule! "^ \\*Dirvish.*" :ignore t)
+;; pdf previewr
+(setq dirvish-preview-dispatchers
+      (cl-substitute 'pdf-preface 'pdf dirvish-preview-dispatchers))
+
+(use-package pdf-view
+  :hook (pdf-tools-enabled . pdf-view-midnight-minor-mode)
+  :hook (pdf-tools-enabled . hide-mode-line-mode)
+  :config
+  (setq pdf-view-midnight-colors '("#ABB2BF" . "#282C35"))
+  (setq-default pdf-view-display-size 'fit-page)
+  (setq pdf-view-use-scaling t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dired
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package! dired
+  :config
+  (when (string= system-type "darwin")
+    (setq dired-use-ls-dired nil))
+  (enable-command 'dired-find-alternate-file)
+  (map!
+   ;; :n "-" #'dired-jump
+   :n "-" #'dirvish
+   :map dired-mode-map
+   :n "-"        #'dired-up-directory
+   :n "<return>" #'dired-find-alternate-file
+   :n "/"        #'dired
+   :n "q"        (cmd! (quit-window t))))
+
+(after! pdf-tools
+  ;; Auto install
+  (pdf-tools-install-noverify)
+
+  (setq-default pdf-view-image-relief 2
+                pdf-view-display-size 'fit-page)
+
+  (add-hook! 'pdf-view-mode-hook
+    (when (memq doom-theme '(modus-vivendi doom-one doom-dark+ doom-vibrant))
+      ;; TODO: find a more generic way to detect if we are in a dark theme
+      (pdf-view-midnight-minor-mode 1)))
+
+  ;; Color the background, so we can see the PDF page borders
+  ;; https://protesilaos.com/emacs/modus-themes#h:ff69dfe1-29c0-447a-915c-b5ff7c5509cd
+  (defun +pdf-tools-backdrop ()
+    (face-remap-add-relative
+     'default
+     `(:background ,(if (memq doom-theme '(modus-vivendi modus-operandi))
+                        (modus-themes-color 'bg-alt)
+                      (doom-color 'bg-alt)))))
+
+  (add-hook 'pdf-tools-enabled-hook #'+pdf-tools-backdrop))
+
+(after! pdf-links
+  ;; Tweak for Modus and `pdf-links'
+  (when (memq doom-theme '(modus-vivendi modus-operandi))
+    ;; https://protesilaos.com/emacs/modus-themes#h:2659d13e-b1a5-416c-9a89-7c3ce3a76574
+    (let ((spec (apply #'append
+                       (mapcar
+                        (lambda (name)
+                          (list name
+                                (face-attribute 'pdf-links-read-link
+                                                name nil 'default)))
+                        '(:family :width :weight :slant)))))
+      (setq pdf-links-read-link-convert-commands
+            `("-density"    "96"
+              "-family"     ,(plist-get spec :family)
+              "-stretch"    ,(let* ((width (plist-get spec :width))
+                                    (name (symbol-name width)))
+                               (replace-regexp-in-string "-" ""
+                                                         (capitalize name)))
+              "-weight"     ,(pcase (plist-get spec :weight)
+                               ('ultra-light "Thin")
+                               ('extra-light "ExtraLight")
+                               ('light       "Light")
+                               ('semi-bold   "SemiBold")
+                               ('bold        "Bold")
+                               ('extra-bold  "ExtraBold")
+                               ('ultra-bold  "Black")
+                               (_weight      "Normal"))
+              "-style"      ,(pcase (plist-get spec :slant)
+                               ('italic  "Italic")
+                               ('oblique "Oblique")
+                               (_slant   "Normal"))
+              "-pointsize"  "%P"
+              "-undercolor" "%f"
+              "-fill"       "%b"
+              "-draw"       "text %X,%Y '%c'")))))
+
+(after! vertico
+  ;; settings
+  (setq vertico-resize nil        ; How to resize the Vertico minibuffer window.
+        vertico-count 17          ; Maximal number of candidates to show.
+        vertico-count-format nil) ; No prefix with number of entries
 
 
-;; (setq code-cells-convert-ipynb-style '(
-;;                                        ("pandoc" "--to" "ipynb" "--from" "org")
-;;                                        ("pandoc" "--to" "org" "--from" "ipynb")
-;;                                        org-mode))
+  ;; looks
+  (setq vertico-grid-separator
+        #("  |  " 2 3 (display (space :width (1))
+                               face (:background "#ECEFF1")))
+        vertico-group-format
+        (concat #(" " 0 1 (face vertico-group-title))
+                #(" " 0 1 (face vertico-group-separator))
+                #(" %s " 0 4 (face vertico-group-title))
+                #(" " 0 1 (face vertico-group-separator
+                            display (space :align-to (- right (-1 . right-margin) (- +1)))))))
+  (set-face-attribute 'vertico-group-separator nil
+                      :strike-through t)
 
-(use-package edit-indirect
-  :defer t
-  :commands (keep-this-line)
-  :bind (("C-c e" . edit-indirect-region)
-         :map edit-indirect-mode-map
-         ("C-c C-s" . keep-this-line)))
+  ;; completion at point
+  (setq completion-in-region-function
+        (lambda (&rest args)
+          (apply (if vertico-mode
+                     #'consult-completion-in-region
+                   #'completion--in-region)
+                 args)))
+  (defun minibuffer-format-candidate (orig cand prefix suffix index _start)
+    (let ((prefix (if (= vertico--index index)
+                      "  "
+                    "   ")))
+      (funcall orig cand prefix suffix index _start)))
+  (advice-add #'vertico--format-candidate
+             :around #'minibuffer-format-candidate)
 
-(defun edit-sentence-at-point ()
-  (interactive)
-  (setq bnds (bounds-of-thing-at-point 'sentence))
-  (goto-char (car bnds))
-  (set-mark-command nil)
-  (goto-char (cdr bnds))
-  (edit-indirect-region (region-beginning) (region-end) t))
+  (defun minibuffer-vertico-setup ()
+    (setq truncate-lines t)
+    (setq completion-in-region-function
+          (if vertico-mode
+              #'consult-completion-in-region
+            #'completion--in-region)))
 
-(defun keep-this-line ()
-  (interactive)
-  (save-excursion (setq this--line (thing-at-point 'sentence))
-                  (goto-char (point-min))
-                  (keep-lines this--line))
-  (edit-indirect-commit))
+  (add-hook 'vertico-mode-hook #'minibuffer-vertico-setup)
+  (add-hook 'minibuffer-setup-hook #'minibuffer-vertico-setup)
+  )
 
+(after! marginalia
+  (setq marginalia-censor-variables nil)
+  (setq marginalia--ellipsis "…"    ; Nicer ellipsis
+        marginalia-align 'right     ; right alignment
+        marginalia-align-offset -1) ; one space on the right
 
-(global-set-key (kbd "C-c s") #'edit-sentence-at-point)
-;; (define-key edit-indirect-mode-map (kbd "C-c C-s") #'keep-this-line))
+  (defadvice! +marginalia--anotate-local-file-colorful (cand)
+    "Just a more colourful version of `marginalia--anotate-local-file'."
+    :override #'marginalia--annotate-local-file
+    (when-let (attrs (file-attributes (substitute-in-file-name
+                                       (marginalia--full-candidate cand))
+                                      'integer))
+      (marginalia--fields
+       ((marginalia--file-owner attrs)
+        :width 12 :face 'marginalia-file-owner)
+       ((marginalia--file-modes attrs))
+       ((+marginalia-file-size-colorful (file-attribute-size attrs))
+        :width 7)
+       ((+marginalia--time-colorful (file-attribute-modification-time attrs))
+        :width 12))))
+
+  (defun +marginalia--time-colorful (time)
+    (let* ((seconds (float-time (time-subtract (current-time) time)))
+           (color (doom-blend
+                   (face-attribute 'marginalia-date :foreground nil t)
+                   (face-attribute 'marginalia-documentation :foreground nil t)
+                   (/ 1.0 (log (+ 3 (/ (+ 1 seconds) 345600.0)))))))
+      ;; 1 - log(3 + 1/(days + 1)) % grey
+      (propertize (marginalia--time time) 'face (list :foreground color))))
+
+  (defun +marginalia-file-size-colorful (size)
+    (let* ((size-index (/ (log10 (+ 1 size)) 7.0))
+           (color (if (< size-index 10000000) ; 10m
+                      (doom-blend 'orange 'green size-index)
+                    (doom-blend 'red 'orange (- size-index 1)))))
+      (propertize (file-size-human-readable size) 'face (list :foreground color)))))
+
+(add-hook 'text-mode-hook 'palimpsest-mode)
+
 
 (use-package! lexic
   :commands lexic-search lexic-list-dictionary
@@ -1836,22 +1533,30 @@ URL `https://tex.stackexchange.com/questions/188287/auctex-folding-and-square-br
          current-prefix-arg))
   (lexic-search identifier nil nil t))
 
-;; ]e [e next and previous error respectively.
-(map! (:after flycheck
-       :m "]e" 'flycheck-next-error
-       :m "[e" 'flycheck-previous-error))
+(use-package edit-indirect
+  :defer t
+  :commands (keep-this-line)
+  :bind (("C-c e" . edit-indirect-region)
+         :map edit-indirect-mode-map
+         ("C-c C-s" . keep-this-line)))
 
-(flycheck-define-checker vale
-  "A checker for prose"
-  :command ("vale"
-            "--output" "line"
-            "--config" "/Users/nisch/.config/vale/.vale.ini"
-            source)
-  :standard-input nil
-  :error-patterns
-  ((error line-start (file-name) ":" line ":" column ":" (id (one-or-more (not (any ":")))) ":" (message) line-end))
-  :modes (markdown-mode org-mode text-mode)
-  )
-(add-to-list 'flycheck-checkers 'vale 'append)
-;; disable global flycheck mode
-(add-hook 'org-mode-hook (lambda () (flycheck-mode -1)))
+(defun edit-sentence-at-point ()
+  (interactive)
+  (setq bnds (bounds-of-thing-at-point 'sentence))
+  (goto-char (car bnds))
+  (set-mark-command nil)
+  (goto-char (cdr bnds))
+  (edit-indirect-region (region-beginning) (region-end) t))
+
+(defun keep-this-line ()
+  (interactive)
+  (save-excursion (setq this--line (thing-at-point 'sentence))
+                  (goto-char (point-min))
+                  (keep-lines this--line))
+  (edit-indirect-commit))
+
+
+(global-set-key (kbd "C-c s") #'edit-sentence-at-point)
+;; (define-key edit-indirect-mode-map (kbd "C-c C-s") #'keep-this-line))
+
+

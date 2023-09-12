@@ -1,5 +1,15 @@
-# Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
+export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME=""
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting fast-syntax-highlighting zsh-autocomplete)
+
+source $ZSH/oh-my-zsh.sh
+
+#Star Ship
+eval "$(starship init zsh)"
+
+# Brew
 if type brew &>/dev/null
 then
 FPATH="$(brew --prefix)/share/zsh/site-functions:${FPATH}"
@@ -8,28 +18,27 @@ autoload -Uz compinit
 compinit
 fi
 
-eval "$(starship init zsh)"
 eval "$(thefuck --alias)"
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
 
-export EDITOR='nvim'
+export EDITOR='emacs'
 export VISUAL="$EDITOR"
 
 # # Exa aliases
-alias ls='exa --icons --group-directories-first'
-alias la='exa -a --icons --group-directories-first'
-alias lsa='exa -a --icons --group-directories-first'
-alias ll='exa -lah --icons --group-directories-first'
-alias l='exa -lh --icons --group-directories-first'
-alias tree='exa --tree --icons --group-directories-first'
+alias ls='eza --icons --group-directories-first'
+alias la='eza -a --icons --group-directories-first'
+alias lsa='eza -a --icons --group-directories-first'
+alias ll='eza -lah --icons --group-directories-first'
+alias l='eza -lh --icons --group-directories-first'
+alias tree='eza --tree --icons --group-directories-first'
 alias v='nvim'                  # Neovim shortcut
 alias o='open'                  # macOS open shortcut
 alias owd='open ./'             # Open current dir in Finder (macOS)
 
 alias doit='dooit'
-alias cle='clear'
+alias c='clear'
 alias ne='neofetch'
 alias v="nvim"
 
@@ -143,7 +152,7 @@ n() {
 }
 
 # rga + fzf
-g() {
+rga() {
 	RG_PREFIX="rga --files-with-matches --column --line-number --no-heading --color=always --smart-case"
 	local file
 	file="$(
@@ -186,19 +195,141 @@ ex () {
    fi
 }
 
+#connect to vpn
+vc() {
+    ~/vpn.exp
+    ssh nischal.mainali@bs-cluster.elsc.huji.ac.il
+}
+
+jc() {
+    # ~/vpn.exp
+    # SSH to the cluster and submit the Jupyter sbatch job.
+    # Capture the job ID for further use.
+    JOB_ID=$(ssh nischal.mainali@bs-cluster.elsc.huji.ac.il "/opt/slurm/bin/sbatch jupyter_sbatch.sh" | grep -oP '\d+')
+
+    if [[ -n "$JOB_ID" ]]; then
+        echo "Job submitted with ID: $JOB_ID"
+        echo $JOB_ID > ~/job_id.txt
+    else
+        echo "Failed to submit job or retrieve job ID."
+    fi
+
+    # Give it a few seconds for the job to initialize.
+    sleep 5
+
+    # Check if the job is running.
+    # Modify the loop count or sleep duration if necessary.
+    COUNTER=10
+    while [[ $COUNTER -gt 0 ]]; do
+        STATUS=$(ssh nischal.mainali@bs-cluster.elsc.huji.ac.il "/opt/slurm/bin/squeue -j $JOB_ID" | tail -n +2 | awk '{print $5}')
+        if [[ $STATUS == "R" ]]; then
+            break
+        fi
+        sleep 5
+        let COUNTER-=1
+    done
+
+    # Set up port forwarding.
+    if [[ $STATUS == "R" ]]; then
+        ssh -N -f -L localhost:8888:ielsc-99:8888 nischal.mainali@bs-cluster.elsc.huji.ac.il
+    else
+        echo "Jupyter job did not start successfully."
+    fi
+}
+
+
+jcn() {
+    # ~/vpn.exp
+    # SSH to the cluster and submit the Jupyter sbatch job.
+    # Capture the job ID for further use.
+
+
+    JOB_ID=$(cat ~/job_id.txt)
+
+    if [[ -n "$JOB_ID" ]]; then
+        # Cancel the Slurm job
+        echo "Existing job ID found."
+    else
+        echo "Starting new job."
+        JOB_ID=$(ssh nischal.mainali@bs-cluster.elsc.huji.ac.il "/opt/slurm/bin/sbatch jupyter_sbatch.sh" | grep -oP '\d+')
+        echo "Job submitted with ID: $JOB_ID"
+        echo $JOB_ID > ~/job_id.txt
+    fi
+
+    # Give it a few seconds for the job to initialize.
+    sleep 5
+
+    # Check if the job is running.
+    # Modify the loop count or sleep duration if necessary.
+    COUNTER=10
+    while [[ $COUNTER -gt 0 ]]; do
+        STATUS=$(ssh nischal.mainali@bs-cluster.elsc.huji.ac.il "/opt/slurm/bin/squeue -j $JOB_ID" | tail -n +2 | awk '{print $5}')
+        if [[ $STATUS == "R" ]]; then
+            break
+        fi
+        sleep 5
+        let COUNTER-=1
+    done
+
+    # Set up port forwarding.
+    if [[ $STATUS == "R" ]]; then
+        ssh -N -f -L localhost:8888:ielsc-99:8888 nischal.mainali@bs-cluster.elsc.huji.ac.il
+    else
+        echo "Jupyter job did not start successfully."
+    fi
+}
+
+
+jd() {
+    # Assuming the job ID is stored in a file named "job_id.txt"
+    JOB_ID=$(cat ~/job_id.txt)
+
+    if [[ -n "$JOB_ID" ]]; then
+        # Cancel the Slurm job
+        ssh nischal.mainali@bs-cluster.elsc.huji.ac.il "/opt/slurm/bin/scancel $JOB_ID"
+        echo "Cancelled job with ID: $JOB_ID."
+        rm ~/job_id.txt
+    else
+        echo "No job ID found."
+    fi
+
+
+    # Find the process ID (PID) of the process running on port 8888
+    pid=$(lsof -ti :8888)
+
+    # Check if a process is running on port 8888
+    if [[ -n $pid ]]; then
+        # Kill the process
+        kill $pid
+        echo "Process on port 8888 has been killed"
+    else
+        echo "No process found on port 8888"
+    fi
+}
+
+
+#disconnect to vpn
+vd() {
+    /opt/cisco/anyconnect/bin/vpn disconnect
+}
+
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 
 eval "$(rbenv init -)"
+# eval "$(github-copilot-cli alias -- "$0")"
 # export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+
 export PATH="$PATH:$HOME/.local/bin"
 export PATH=$PATH:/Users/nisch/.spicetify
 export PATH=$HOME/.emacs.d/bin:$PATH
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home"
 export PATH="/opt/homebrew/opt/grep/libexec/gnubin:$PATH"
-
 alias te="~/.emacs.d/emacs-client-server.sh"
 
-# Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

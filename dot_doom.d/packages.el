@@ -1,3 +1,4 @@
+
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
@@ -49,33 +50,32 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;(unpin! t)
 
-(package! visual-fill-column)
-(package! org-super-agenda)
-;; (package! peep-dired)
+
+;; (package! zoom)
+
+(package! all-the-icons)
 (package! copilot
   :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
-(package! gptel)
+(package! rainbow-mode)
+(package! beacon)
+(package! visual-fill-column)
 (package! moody)
 (package! minions)
-(package! material-theme)
-(package! org-auto-tangle)
-(package! beacon)
-(package! rainbow-mode)
+(package! vundo
+  :recipe (:host github
+           :repo "casouri/vundo"))
+(package! aggressive-indent)
 (package! org-modern)
 (package! org-edit-indirect)
 (package! academic-phrases)
-(package! code-cells)
-(package! lexic)
 (package! org-appear)
+(package! lexic)
 (package! evil-tex)
 (package! aas :recipe (:host github :repo "ymarco/auto-activating-snippets"))
 (package! laas)
 (package! math-delimiters
   :recipe (:host github :repo "oantolin/math-delimiters" :branch "master"))
 (package! latex-change-env)
-(package! zoom)
-(package! vundo
-  :recipe (:host github
-           :repo "casouri/vundo"))
-(package! aggressive-indent)
-;; (package! lsp-ltex)
+(package! codeium :recipe (:host github :repo "Exafunction/codeium.el"))
+(package! palimpsest)
+(package! jupyter :pin "053a78da252b19cf59cefe6b83f9c4531a38d6b2")

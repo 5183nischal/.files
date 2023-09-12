@@ -14,50 +14,50 @@ sudo yabai --load-sa
 
 # ===== Tiling setting =========================
 
-yabai -m config                               \
-    layout                      bsp           \
-                                              \
-    external_bar                all:30:0      \
-                                              \
-    top_padding                 8             \
-    bottom_padding              10             \
-    left_padding                11             \
-    right_padding               11             \
-    window_gap                  8            \
-                                              \
-    mouse_follows_focus         off           \
-    focus_follows_mouse         off           \
-                                              \
-    window_topmost              on            \
-    window_opacity              off            \
-    window_shadow               on            \
-                                              \
-    window_border               on            \
-    window_border_blur          off            \
-    window_border_hidpi         on            \
-    window_border_width         1            \
-    window_border_radius        11             \
-    window_origin_display       default       \
-    window_placement            second_child  \
-    window_topmost              off           \
-                                              \
-    insert_feedback_color       "0xaad75f5f"  \
-    active_window_border_color  "0xfff4dbd6"  \
-    normal_window_border_color  "0x8f363a4f"  \
-                                              \
-    window_opacity              off           \
-    active_window_opacity       1.0           \
-    normal_window_opacity       0.8           \
-                                              \
-    window_animation_duration 0.01            \
-                                              \
-    split_ratio                 0.63          \
-                                              \
-    auto_balance                off           \
-                                              \
-    mouse_modifier              ctrl          \
-    mouse_action1               move          \
-    mouse_action2               stack
+yabai -m config \
+  layout bsp \
+  \
+  external_bar all:30:0 \
+  \
+  top_padding 8 \
+  bottom_padding 10 \
+  left_padding 11 \
+  right_padding 11 \
+  window_gap 8 \
+  \
+  mouse_follows_focus off \
+  focus_follows_mouse off \
+  \
+  window_topmost on \
+  window_opacity off \
+  window_shadow on \
+  \
+  window_border off \
+  window_border_blur off \
+  window_border_hidpi on \
+  window_border_width 3 \
+  window_border_radius 11 \
+  window_origin_display default \
+  window_placement second_child \
+  window_topmost off \
+  \
+  insert_feedback_color "0xaad75f5f" \
+  active_window_border_color "0xfff4dbd6" \
+  normal_window_border_color "0x8f363a4f" \
+  \
+  window_opacity off \
+  active_window_opacity 1.0 \
+  normal_window_opacity 0.8 \
+  \
+  window_animation_duration 0.01 \
+  \
+  split_ratio 0.63 \
+  \
+  auto_balance off \
+  \
+  mouse_modifier ctrl \
+  mouse_action1 move \
+  mouse_action2 stack
 
 # ===== Rules ==================================
 
@@ -71,7 +71,11 @@ yabai -m rule --add label="Dictionary" app="^Dictionary$" manage=off
 yabai -m rule --add label="mpv" app="^mpv$" manage=off
 yabai -m rule --add label="Raycast Settings" app="Raycast" title=".*" manage=off
 yabai -m rule --add label="FaceTime" app="FaceTime" title=".*" manage=off
+
 yabai -m rule --add app="Arc.LittleBrowserWindow" manage=off
+yabai -m rule --add label="Little Arc" app="^Arc$" title="^Little\sArc.*" manage=off
+yabai -m rule --add label="Little Arc" app="^Arc$" title="^Space.*" manage=off
+yabai -m rule --add app="^Arc$" title="^$" mouse_follows_focus=off
 # ===== Signals ================================
 yabai -m signal --add event=window_destroyed active=yes action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse &> /dev/null || yabai -m window --focus \$(yabai -m query --windows --space | jq .[0].id) &> /dev/null"
 yabai -m signal --add event=window_created action="yabai -m query --windows --window $YABAI_WINDOW_ID | jq -er '.\"can-resize\" == false and .\"is-floating\" == false' && yabai -m window $YABAI_WINDOW_ID --toggle float"
